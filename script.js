@@ -1,7 +1,44 @@
 /* ===================================
-   VOTING SYSTEM - MAIN JAVASCRIPT
+   VOTING SYSTEM - FIREBASE VERSION
    Educational/Demo Purpose Only
    =================================== */
+
+// ===================================
+// FIREBASE CONFIGURATION
+// ===================================
+
+// TODO: Replace with your Firebase config from Firebase Console
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY_HERE",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+let database;
+let votesRef;
+
+function initializeFirebase() {
+    try {
+        // Initialize Firebase App
+        firebase.initializeApp(firebaseConfig);
+        
+        // Get database reference
+        database = firebase.database();
+        votesRef = database.ref('votes');
+        
+        console.log('✅ Firebase initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+        alert('Firebase connection error. Please check your configuration.');
+        return false;
+    }
+}
 
 // ===================================
 // DATA - Political Parties
@@ -43,51 +80,188 @@ const politicalParties = [
 ];
 
 // ===================================
-// UTILITY FUNCTIONS
+// FIREBASE FUNCTIONS - VOTES
 // ===================================
 
-// Initialize localStorage data structure
-function initializeData() {
-    if (!localStorage.getItem('votingData')) {
-        const initialData = {
-            votes: {},
-            hasVoted: false,
-            votedParty: null,
-            timestamp: null
-        };
+/**
+ * Initialize vote counts for all parties in Firebase
+ * Creates the structure if it doesn't exist
+ */
+async function initializeVoteCounts() {
+    try {
+        const snapshot = await votesRef.once('value');
+        const data = snapshot.val();
         
-        // Initialize vote counts for all parties
-        politicalParties.forEach(party => {
-            initialData.votes[party.id] = 0;
-        });
-        
-        localStorage.setItem('votingData', JSON.stringify(initialData));
+        // If no data exists, initialize with zero votes
+        if (!data) {
+            const initialVotes = {};
+            politicalParties.forEach(party => {
+                initialVotes[party.id] = 0;
+            });
+            await votesRef.set(initialVotes);
+            console.log('✅ Vote counts initialized in Firebase');
+        }
+    } catch (error) {
+        console.error('❌ Error initializing vote counts:', error);
     }
 }
 
-// Get voting data from localStorage
-function getVotingData() {
-    return JSON.parse(localStorage.getItem('votingData'));
+/**
+ * Add a vote to a specific party in Firebase
+ * @param {string} partyId - The ID of the party to vote for
+ * @returns {Promise<boolean>} - Success status
+ */
+async function addVote(partyId) {
+    try {
+        // Get current vote count
+        const partyRef = votesRef.child(partyId);
+        const snapshot = await partyRef.once('value');
+        const currentVotes = snapshot.val() || 0;
+        
+        // Increment vote count
+        await partyRef.set(currentVotes + 1);
+        
+        console.log(`✅ Vote added for ${partyId}. New count: ${currentVotes + 1}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Error adding vote:', error);
+        return false;
+    }
 }
 
-// Update voting data in localStorage
-function updateVotingData(data) {
-    localStorage.setItem('votingData', JSON.stringify(data));
+/**
+ * Get all vote counts from Firebase
+ * @returns {Promise<Object>} - Object with party IDs and vote counts
+ */
+async function getAllVotes() {
+    try {
+        const snapshot = await votesRef.once('value');
+        const votes = snapshot.val() || {};
+        console.log('✅ Votes retrieved from Firebase:', votes);
+        return votes;
+    } catch (error) {
+        console.error('❌ Error getting votes:', error);
+        return {};
+    }
 }
 
-// Get total votes
-function getTotalVotes() {
-    const data = getVotingData();
-    return Object.values(data.votes).reduce((sum, count) => sum + count, 0);
+/**
+ * Listen for real-time updates to vote counts
+ * @param {Function} callback - Function to call when data changes
+ */
+function listenToVoteUpdates(callback) {
+    votesRef.on('value', (snapshot) => {
+        const votes = snapshot.val() || {};
+        console.log('🔄 Real-time update received:', votes);
+        callback(votes);
+    });
 }
 
-// Get sorted parties by votes
-function getSortedParties() {
-    const data = getVotingData();
+/**
+ * Stop listening to vote updates
+ */
+function stopListeningToVotes() {
+    votesRef.off('value');
+    console.log('🛑 Stopped listening to vote updates');
+}
+
+/**
+ * Reset all votes to zero in Firebase
+ * @returns {Promise<boolean>} - Success status
+ */
+async function resetAllVotes() {
+    try {
+        const resetVotes = {};
+        politicalParties.forEach(party => {
+            resetVotes[party.id] = 0;
+        });
+        await votesRef.set(resetVotes);
+        console.log('✅ All votes reset successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Error resetting votes:', error);
+        return false;
+    }
+}
+
+/**
+ * Get vote count for a specific party
+ * @param {string} partyId - The ID of the party
+ * @returns {Promise<number>} - Vote count
+ */
+async function getVoteCount(partyId) {
+    try {
+        const snapshot = await votesRef.child(partyId).once('value');
+        return snapshot.val() || 0;
+    } catch (error) {
+        console.error('❌ Error getting vote count:', error);
+        return 0;
+    }
+}
+
+// ===================================
+// LOCAL STORAGE - USER VOTING STATUS
+// ===================================
+
+/**
+ * Check if user has already voted (stored locally)
+ * @returns {boolean}
+ */
+function hasUserVoted() {
+    return localStorage.getItem('hasVoted') === 'true';
+}
+
+/**
+ * Get which party user voted for (stored locally)
+ * @returns {string|null}
+ */
+function getUserVotedParty() {
+    return localStorage.getItem('votedParty');
+}
+
+/**
+ * Mark user as having voted (stored locally)
+ * @param {string} partyId - The ID of the party voted for
+ */
+function markUserAsVoted(partyId) {
+    localStorage.setItem('hasVoted', 'true');
+    localStorage.setItem('votedParty', partyId);
+    localStorage.setItem('voteTimestamp', new Date().toISOString());
+}
+
+/**
+ * Unlock voting for user (remove local lock)
+ */
+function unlockUserVoting() {
+    localStorage.removeItem('hasVoted');
+    localStorage.removeItem('votedParty');
+    localStorage.removeItem('voteTimestamp');
+    console.log('✅ User voting unlocked locally');
+}
+
+// ===================================
+// UTILITY FUNCTIONS
+// ===================================
+
+/**
+ * Get total votes across all parties
+ * @param {Object} votes - Votes object from Firebase
+ * @returns {number}
+ */
+function getTotalVotes(votes) {
+    return Object.values(votes).reduce((sum, count) => sum + count, 0);
+}
+
+/**
+ * Get sorted parties by votes
+ * @param {Object} votes - Votes object from Firebase
+ * @returns {Array}
+ */
+function getSortedParties(votes) {
     return politicalParties
         .map(party => ({
             ...party,
-            votes: data.votes[party.id] || 0
+            votes: votes[party.id] || 0
         }))
         .sort((a, b) => b.votes - a.votes);
 }
@@ -96,13 +270,18 @@ function getSortedParties() {
 // VOTING PAGE FUNCTIONS
 // ===================================
 
-// Render party cards
-function renderPartyCards() {
+/**
+ * Render party cards on voting page
+ */
+async function renderPartyCards() {
     const grid = document.getElementById('partiesGrid');
     if (!grid) return;
     
-    const data = getVotingData();
-    const hasVoted = data.hasVoted;
+    const hasVoted = hasUserVoted();
+    const votedParty = getUserVotedParty();
+    
+    // Get current votes from Firebase
+    const votes = await getAllVotes();
     
     grid.innerHTML = '';
     
@@ -127,7 +306,7 @@ function renderPartyCards() {
             <p class="party-slogan">${party.slogan}</p>
             <div class="party-actions">
                 ${hasVoted ? 
-                    (data.votedParty === party.id ? 
+                    (votedParty === party.id ? 
                         '<button class="btn btn-success" disabled>✓ Your Vote</button>' :
                         '<button class="btn btn-secondary" disabled>Vote</button>'
                     ) :
@@ -143,15 +322,18 @@ function renderPartyCards() {
     updateVotingStatus();
 }
 
-// Update voting status message
+/**
+ * Update voting status message
+ */
 function updateVotingStatus() {
     const statusDiv = document.getElementById('votingStatus');
     if (!statusDiv) return;
     
-    const data = getVotingData();
+    const hasVoted = hasUserVoted();
     
-    if (data.hasVoted) {
-        const votedParty = politicalParties.find(p => p.id === data.votedParty);
+    if (hasVoted) {
+        const votedPartyId = getUserVotedParty();
+        const votedParty = politicalParties.find(p => p.id === votedPartyId);
         statusDiv.innerHTML = `✓ You have already voted for ${votedParty ? votedParty.name : 'a party'}`;
         statusDiv.style.background = 'var(--color-success-light)';
         statusDiv.style.color = 'var(--color-success)';
@@ -162,7 +344,10 @@ function updateVotingStatus() {
     }
 }
 
-// Show confirmation modal
+// ===================================
+// MODAL FUNCTIONS
+// ===================================
+
 let selectedPartyId = null;
 
 function showConfirmModal(partyId) {
@@ -181,43 +366,57 @@ function showConfirmModal(partyId) {
     modal.classList.add('active');
 }
 
-// Close confirmation modal
 function closeModal() {
     selectedPartyId = null;
     document.getElementById('confirmModal').classList.remove('active');
 }
 
-// Confirm and submit vote
-function confirmVote() {
+/**
+ * Confirm and submit vote to Firebase
+ */
+async function confirmVote() {
     if (!selectedPartyId) return;
     
-    const data = getVotingData();
+    // Show loading state
+    const confirmBtn = event.target;
+    const originalText = confirmBtn.textContent;
+    confirmBtn.textContent = 'Submitting...';
+    confirmBtn.disabled = true;
     
-    // Record the vote
-    data.votes[selectedPartyId] = (data.votes[selectedPartyId] || 0) + 1;
-    data.hasVoted = true;
-    data.votedParty = selectedPartyId;
-    data.timestamp = new Date().toISOString();
-    
-    updateVotingData(data);
-    
-    // Close confirm modal
-    closeModal();
-    
-    // Show success modal
-    showSuccessModal();
-    
-    // Re-render cards
-    renderPartyCards();
+    try {
+        // Add vote to Firebase
+        const success = await addVote(selectedPartyId);
+        
+        if (success) {
+            // Mark user as voted locally
+            markUserAsVoted(selectedPartyId);
+            
+            // Close confirm modal
+            closeModal();
+            
+            // Show success modal
+            showSuccessModal();
+            
+            // Re-render cards
+            await renderPartyCards();
+        } else {
+            alert('Failed to submit vote. Please try again.');
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error submitting vote:', error);
+        alert('An error occurred. Please try again.');
+        confirmBtn.textContent = originalText;
+        confirmBtn.disabled = false;
+    }
 }
 
-// Show success modal
 function showSuccessModal() {
     const modal = document.getElementById('successModal');
     modal.classList.add('active');
 }
 
-// Close success modal and redirect to results
 function closeSuccessModal() {
     document.getElementById('successModal').classList.remove('active');
     window.location.href = 'results.html';
@@ -227,7 +426,9 @@ function closeSuccessModal() {
 // RESULTS PAGE FUNCTIONS
 // ===================================
 
-// Animate counter
+/**
+ * Animate counter
+ */
 function animateCounter(element, target, duration = 1000) {
     let start = 0;
     const increment = target / (duration / 16);
@@ -243,16 +444,29 @@ function animateCounter(element, target, duration = 1000) {
     }, 16);
 }
 
-// Initialize results page
+/**
+ * Initialize results page with real-time updates
+ */
 function initResults() {
-    const totalVotes = getTotalVotes();
-    const sortedParties = getSortedParties();
+    // Listen for real-time vote updates
+    listenToVoteUpdates((votes) => {
+        updateResultsDisplay(votes);
+    });
+}
+
+/**
+ * Update all results display elements
+ * @param {Object} votes - Votes object from Firebase
+ */
+function updateResultsDisplay(votes) {
+    const totalVotes = getTotalVotes(votes);
+    const sortedParties = getSortedParties(votes);
     const leadingParty = sortedParties[0];
     
     // Update stats
     const totalVotesEl = document.getElementById('totalVotes');
     if (totalVotesEl) {
-        animateCounter(totalVotesEl, totalVotes);
+        totalVotesEl.textContent = totalVotes;
     }
     
     const leadingPartyEl = document.getElementById('leadingParty');
@@ -268,19 +482,21 @@ function initResults() {
     }
     
     // Render rankings
-    renderRankings();
+    renderRankings(votes);
     
     // Render chart
-    renderChart();
+    renderChart(votes);
 }
 
-// Render rankings grid
-function renderRankings() {
+/**
+ * Render rankings grid
+ */
+function renderRankings(votes) {
     const grid = document.getElementById('rankingsGrid');
     if (!grid) return;
     
-    const sortedParties = getSortedParties();
-    const totalVotes = getTotalVotes();
+    const sortedParties = getSortedParties(votes);
+    const totalVotes = getTotalVotes(votes);
     
     grid.innerHTML = '';
     
@@ -304,26 +520,17 @@ function renderRankings() {
         `;
         
         grid.appendChild(card);
-        
-        // Animate card entrance
-        setTimeout(() => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateX(-20px)';
-            setTimeout(() => {
-                card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                card.style.opacity = '1';
-                card.style.transform = 'translateX(0)';
-            }, 50);
-        }, index * 100);
     });
 }
 
-// Render chart using Chart.js
-function renderChart() {
+/**
+ * Render chart using Chart.js
+ */
+function renderChart(votes) {
     const canvas = document.getElementById('votesChart');
     if (!canvas) return;
     
-    const sortedParties = getSortedParties();
+    const sortedParties = getSortedParties(votes);
     
     const ctx = canvas.getContext('2d');
     
@@ -350,7 +557,7 @@ function renderChart() {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 1500,
+                duration: 750,
                 easing: 'easeOutQuart'
             },
             plugins: {
@@ -370,7 +577,7 @@ function renderChart() {
                     },
                     callbacks: {
                         label: function(context) {
-                            const total = getTotalVotes();
+                            const total = getTotalVotes(votes);
                             const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
                             return `Votes: ${context.raw} (${percentage}%)`;
                         }
@@ -420,7 +627,7 @@ function handleLogin(event) {
     const errorMsg = document.getElementById('errorMessage');
     
     // Demo credentials
-    if (username === 'singhthakuriswapneel@gmail.com' && password === 'test123') {
+    if (username === 'singhthakuriswapneel@gmail.com' && password === 'Nepscantrix123') {
         localStorage.setItem('adminLoggedIn', 'true');
         window.location.href = 'admin.html';
     } else {
@@ -454,16 +661,29 @@ if (!document.querySelector('style[data-shake]')) {
 // ADMIN DASHBOARD FUNCTIONS
 // ===================================
 
+/**
+ * Initialize admin dashboard with real-time updates
+ */
 function initAdminDashboard() {
-    const totalVotes = getTotalVotes();
-    const sortedParties = getSortedParties();
+    // Listen for real-time vote updates
+    listenToVoteUpdates((votes) => {
+        updateAdminDisplay(votes);
+    });
+}
+
+/**
+ * Update admin dashboard display
+ */
+function updateAdminDisplay(votes) {
+    const totalVotes = getTotalVotes(votes);
+    const sortedParties = getSortedParties(votes);
     const leadingParty = sortedParties[0];
-    const data = getVotingData();
+    const hasVoted = hasUserVoted();
     
     // Update stats
     const totalVotesEl = document.getElementById('adminTotalVotes');
     if (totalVotesEl) {
-        animateCounter(totalVotesEl, totalVotes);
+        totalVotesEl.textContent = totalVotes;
     }
     
     const leadingPartyEl = document.getElementById('adminLeadingParty');
@@ -473,20 +693,23 @@ function initAdminDashboard() {
     
     const statusEl = document.getElementById('votingStatusText');
     if (statusEl) {
-        statusEl.textContent = data.hasVoted ? 'Locked' : 'Active';
-        statusEl.style.color = data.hasVoted ? 'var(--color-warning)' : 'var(--color-success)';
+        statusEl.textContent = hasVoted ? 'Locked' : 'Active';
+        statusEl.style.color = hasVoted ? 'var(--color-warning)' : 'var(--color-success)';
     }
     
     // Render results table
-    renderAdminResultsTable();
+    renderAdminResultsTable(votes);
 }
 
-function renderAdminResultsTable() {
+/**
+ * Render admin results table
+ */
+function renderAdminResultsTable(votes) {
     const tableBody = document.getElementById('adminResultsTable');
     if (!tableBody) return;
     
-    const sortedParties = getSortedParties();
-    const totalVotes = getTotalVotes();
+    const sortedParties = getSortedParties(votes);
+    const totalVotes = getTotalVotes(votes);
     
     tableBody.innerHTML = '';
     
@@ -514,14 +737,13 @@ function logoutAdmin() {
     window.location.href = 'admin-login.html';
 }
 
+/**
+ * Unlock voting for all users (clears local storage lock)
+ */
 function unlockVoting() {
-    if (confirm('Are you sure you want to unlock voting? This will allow users to vote again.')) {
-        const data = getVotingData();
-        data.hasVoted = false;
-        data.votedParty = null;
-        updateVotingData(data);
-        
-        alert('Voting has been unlocked successfully!');
+    if (confirm('Are you sure you want to unlock voting? This will allow users to vote again from their browsers.')) {
+        unlockUserVoting();
+        alert('Voting has been unlocked for your browser. Other users must clear their own browser data.');
         initAdminDashboard();
     }
 }
@@ -535,27 +757,37 @@ function closeResetModal() {
     document.getElementById('resetModal').classList.remove('active');
 }
 
-function confirmReset() {
+/**
+ * Confirm and reset all votes in Firebase
+ */
+async function confirmReset() {
     const input = document.getElementById('resetConfirmInput').value;
     
     if (input === 'RESET') {
-        // Reset all data
-        const initialData = {
-            votes: {},
-            hasVoted: false,
-            votedParty: null,
-            timestamp: null
-        };
+        // Show loading
+        const resetBtn = event.target;
+        const originalText = resetBtn.textContent;
+        resetBtn.textContent = 'Resetting...';
+        resetBtn.disabled = true;
         
-        politicalParties.forEach(party => {
-            initialData.votes[party.id] = 0;
-        });
-        
-        updateVotingData(initialData);
-        
-        closeResetModal();
-        alert('System has been reset successfully!');
-        initAdminDashboard();
+        try {
+            // Reset all votes in Firebase
+            const success = await resetAllVotes();
+            
+            if (success) {
+                closeResetModal();
+                alert('System has been reset successfully! All votes cleared from Firebase.');
+                // Dashboard will update automatically via real-time listener
+            } else {
+                alert('Failed to reset votes. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error resetting votes:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            resetBtn.textContent = originalText;
+            resetBtn.disabled = false;
+        }
     } else {
         alert('Please type RESET to confirm');
     }
@@ -565,38 +797,45 @@ function confirmReset() {
 // INITIALIZATION
 // ===================================
 
-// Initialize data on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeData();
+/**
+ * Main initialization function
+ */
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Initializing Voting System...');
+    
+    // Initialize Firebase
+    const firebaseReady = initializeFirebase();
+    
+    if (!firebaseReady) {
+        console.error('❌ Firebase not initialized. Please check configuration.');
+        return;
+    }
+    
+    // Initialize vote counts in Firebase
+    await initializeVoteCounts();
     
     // Check which page we're on and initialize accordingly
     if (document.getElementById('partiesGrid')) {
-        renderPartyCards();
+        console.log('📄 Loading voting page...');
+        await renderPartyCards();
     }
     
     if (document.getElementById('votesChart')) {
+        console.log('📊 Loading results page...');
         initResults();
     }
     
     if (document.getElementById('adminResultsTable')) {
+        console.log('🔧 Loading admin dashboard...');
         initAdminDashboard();
     }
+    
+    console.log('✅ System ready!');
 });
 
-// Auto-refresh results page every 5 seconds
-if (window.location.pathname.includes('results.html')) {
-    setInterval(() => {
-        if (typeof initResults === 'function') {
-            initResults();
-        }
-    }, 5000);
-}
-
-// Auto-refresh admin dashboard every 5 seconds
-if (window.location.pathname.includes('admin.html')) {
-    setInterval(() => {
-        if (typeof initAdminDashboard === 'function') {
-            initAdminDashboard();
-        }
-    }, 5000);
-}
+// Cleanup listeners when leaving results or admin pages
+window.addEventListener('beforeunload', function() {
+    if (document.getElementById('votesChart') || document.getElementById('adminResultsTable')) {
+        stopListeningToVotes();
+    }
+});
