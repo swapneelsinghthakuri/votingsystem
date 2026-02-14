@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - VoteNation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                </svg>
+                <span class="brand-text">VoteNation</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Vote</a>
+                <a href="results.html" class="nav-link">Results</a>
+                <a href="admin-login.html" class="nav-link active">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                    <h2 class="login-title">Admin Access</h2>
+                    <p class="login-subtitle">Enter your credentials to access the admin panel</p>
+                </div>
+
+                <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="Enter username"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter password"
+                            required
+                        >
+                    </div>
+
+                    <div class="error-message" id="errorMessage"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <p class="demo-note">Demo Credentials</p>
+                    <div class="demo-credentials">
+                        <code>Username: admin</code>
+                        <code>Password: admin123</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© Voting Management System | Design By Swapneel Singh Thakuri</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
