@@ -9,13 +9,14 @@
 
 // TODO: Replace with your Firebase config from Firebase Console
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAv8bamyrsoCdLdPR63CN2qlH_SwD8xMEo",
+  authDomain: "fir-voting-system-fb1b8.firebaseapp.com",
+  databaseURL: "https://fir-voting-system-fb1b8-default-rtdb.firebaseio.com",
+  projectId: "fir-voting-system-fb1b8",
+  storageBucket: "fir-voting-system-fb1b8.firebasestorage.app",
+  messagingSenderId: "260352762458",
+  appId: "1:260352762458:web:0b0ab7cb46156c89f4ee63",
+  measurementId: "G-TE2HRKJQCQ"
 };
 
 // Initialize Firebase
