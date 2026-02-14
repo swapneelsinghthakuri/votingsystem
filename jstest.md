@@ -869,3 +869,40 @@ window.addEventListener('beforeunload', function() {
         stopListeningToVotes();
     }
 });
+
+
+
+
+
+
+------------------------------------------
+
+
+
+card.innerHTML = `
+            <div class="party-header">
+                <div class="party-logo" style="background: ${party.color}20; color: ${party.color}">
+                    ${party.logo}
+                </div>
+                <div class="party-info">
+                    <h3 class="party-name">${party.name}</h3>
+                    <p class="party-leader">
+                        <span class="leader-photo">${party.leader.charAt(0)}</span>
+                        ${party.leader}
+                    </p>
+                </div>
+            </div>
+            <p class="party-slogan">${party.slogan}</p>
+            <div class="party-actions">
+                ${hasVoted ? 
+                    (votedParty === party.id ? 
+                        '<button class="btn btn-success" disabled>✓ Your Vote</button>' :
+                        '<button class="btn btn-secondary" disabled>Vote</button>'
+                    ) :
+                    `<button class="btn btn-primary" onclick="showConfirmModal('${party.id}')">Vote for ${party.name.split(' ')[0]}</button>`
+                }
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
