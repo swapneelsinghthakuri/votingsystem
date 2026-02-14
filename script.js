@@ -420,7 +420,7 @@ function handleLogin(event) {
     const errorMsg = document.getElementById('errorMessage');
     
     // Demo credentials
-    if (username === 'singhthakuriswapneel@gmail.com' && password === '$wapneelSt01') {
+    if (username === 'singhthakuriswapneel@gmail.com' && password === 'test123') {
         localStorage.setItem('adminLoggedIn', 'true');
         window.location.href = 'admin.html';
     } else {
