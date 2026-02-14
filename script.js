@@ -449,8 +449,23 @@ function animateCounter(element, target, duration = 1000) {
  * Initialize results page with real-time updates
  */
 function initResults() {
+    console.log('📊 Initializing results page...');
+    
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined') {
+        console.error('❌ Chart.js not loaded! Make sure the script is included in HTML.');
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        if (chartWrapper) {
+            chartWrapper.innerHTML = '<div style="text-align: center; padding: 40px; color: #ef4444;">Chart.js failed to load. Please check your internet connection and refresh the page.</div>';
+        }
+        return;
+    }
+    
+    console.log('✅ Chart.js loaded successfully');
+    
     // Listen for real-time vote updates
     listenToVoteUpdates((votes) => {
+        console.log('🔄 Updating results display...');
         updateResultsDisplay(votes);
     });
 }
@@ -460,9 +475,14 @@ function initResults() {
  * @param {Object} votes - Votes object from Firebase
  */
 function updateResultsDisplay(votes) {
+    console.log('📊 Updating results display with votes:', votes);
+    
     const totalVotes = getTotalVotes(votes);
     const sortedParties = getSortedParties(votes);
     const leadingParty = sortedParties[0];
+    
+    console.log('Total votes:', totalVotes);
+    console.log('Sorted parties:', sortedParties);
     
     // Update stats
     const totalVotesEl = document.getElementById('totalVotes');
@@ -486,6 +506,7 @@ function updateResultsDisplay(votes) {
     renderRankings(votes);
     
     // Render chart
+    console.log('📈 Rendering chart...');
     renderChart(votes);
 }
 
@@ -532,14 +553,19 @@ function renderChart(votes) {
     if (!canvas) return;
     
     const sortedParties = getSortedParties(votes);
+    const totalVotes = getTotalVotes(votes);
+    
+    // Log for debugging
+    console.log('📊 Rendering chart with data:', sortedParties);
     
     const ctx = canvas.getContext('2d');
     
     // Destroy existing chart if it exists
-    if (window.votesChart) {
+    if (window.votesChart && typeof window.votesChart.destroy === 'function') {
         window.votesChart.destroy();
     }
     
+    // Create new chart
     window.votesChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -578,8 +604,7 @@ function renderChart(votes) {
                     },
                     callbacks: {
                         label: function(context) {
-                            const total = getTotalVotes(votes);
-                            const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                            const percentage = totalVotes > 0 ? ((context.raw / totalVotes) * 100).toFixed(1) : 0;
                             return `Votes: ${context.raw} (${percentage}%)`;
                         }
                     }
@@ -604,7 +629,10 @@ function renderChart(votes) {
                         font: {
                             size: 12,
                             weight: 'bold'
-                        }
+                        },
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 0
                     },
                     grid: {
                         display: false,
@@ -614,6 +642,8 @@ function renderChart(votes) {
             }
         }
     });
+    
+    console.log('✅ Chart rendered successfully');
 }
 
 // ===================================
@@ -628,7 +658,7 @@ function handleLogin(event) {
     const errorMsg = document.getElementById('errorMessage');
     
     // Demo credentials
-    if (username === 'singhthakuriswapneel@gmail.com' && password === 'Nepscantrix123') {
+    if (username === 'admin' && password === 'admin123') {
         localStorage.setItem('adminLoggedIn', 'true');
         window.location.href = 'admin.html';
     } else {

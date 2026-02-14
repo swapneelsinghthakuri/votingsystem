@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Test - Debug</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div style="max-width: 1200px; margin: 50px auto; padding: 20px;">
+        <h1>Chart.js Test Page</h1>
+        <p>This page tests if Chart.js is working correctly.</p>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="chart-title">Vote Distribution Test</h2>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="testChart"></canvas>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3>Debug Info:</h3>
+            <div id="debugInfo" style="background: #f0f0f0; padding: 15px; border-radius: 8px; font-family: monospace;"></div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="testChart()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Reload Chart
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Debug info
+        const debugDiv = document.getElementById('debugInfo');
+        
+        function log(message) {
+            console.log(message);
+            debugDiv.innerHTML += message + '<br>';
+        }
+
+        log('🔍 Checking Chart.js...');
+        log('Chart.js loaded: ' + (typeof Chart !== 'undefined' ? 'YES ✅' : 'NO ❌'));
+        
+        if (typeof Chart !== 'undefined') {
+            log('Chart.js version: ' + Chart.version);
+        }
+
+        // Test data
+        const testData = {
+            parties: [
+                { name: 'Progressive Unity Party', votes: 15, color: '#2563eb' },
+                { name: 'National Development Alliance', votes: 23, color: '#10b981' },
+                { name: 'Democratic Reform Coalition', votes: 8, color: '#f59e0b' },
+                { name: "People's Welfare Movement", votes: 12, color: '#ef4444' }
+            ]
+        };
+
+        function testChart() {
+            log('📊 Creating test chart...');
+            
+            const canvas = document.getElementById('testChart');
+            if (!canvas) {
+                log('❌ Canvas element not found!');
+                return;
+            }
+            
+            log('✅ Canvas element found');
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Destroy existing chart
+            if (window.testChartInstance) {
+                window.testChartInstance.destroy();
+                log('🗑️ Destroyed previous chart');
+            }
+
+            try {
+                window.testChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: testData.parties.map(p => p.name),
+                        datasets: [{
+                            label: 'Votes',
+                            data: testData.parties.map(p => p.votes),
+                            backgroundColor: testData.parties.map(p => p.color + '40'),
+                            borderColor: testData.parties.map(p => p.color),
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                borderRadius: 8
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                log('✅ Chart created successfully!');
+                log('Chart data: ' + JSON.stringify(testData.parties.map(p => ({ name: p.name, votes: p.votes }))));
+                
+            } catch (error) {
+                log('❌ Error creating chart: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Create chart on load
+        window.addEventListener('load', function() {
+            log('📄 Page loaded');
+            setTimeout(testChart, 100);
+        });
+    </script>
+</body>
+</html>
