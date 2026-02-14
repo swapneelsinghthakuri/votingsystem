@@ -20,6 +20,29 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+let viewsRef;
+
+function initializeViews() {
+    try {
+        viewsRef = database.ref('views');
+
+        // Increment view count by 1 (atomic update)
+        viewsRef.transaction(currentViews => {
+            return (currentViews || 0) + 1;
+        });
+
+        // Listen for real-time updates
+        viewsRef.on('value', snapshot => {
+            const totalViews = snapshot.val() || 0;
+            const viewsEl = document.getElementById('pageViews');
+            if (viewsEl) viewsEl.textContent = totalViews;
+        });
+
+        console.log('✅ Page views initialized');
+    } catch (error) {
+        console.error('❌ Error initializing views:', error);
+    }
+}
 let database;
 let votesRef;
 
@@ -59,7 +82,7 @@ const politicalParties = [
         name: 'Communist Party of Nepal (Unified Socialist/ UML)',
         leader: 'K.P. Sharma Oli',
         leaderPhoto: 'images/leaders/oil.jpg',
-        logo: 'images/logos/uml_logo.png',
+        logo: 'images/logos/images.png',
         color: '#10b981'
     },
     {
@@ -67,7 +90,7 @@ const politicalParties = [
         name: 'Nepal Communist Party (NCP)',
         leader: 'Pushpa Kamal Dahal “Prachanda”',
         leaderPhoto: 'images/leaders/prachanda-puspa.jpg',
-        logo: 'images/logos/ncp_logo.png',
+        logo: 'images/logos/images (1).png',
         color: '#f59e0b'
     },
     {
@@ -75,7 +98,7 @@ const politicalParties = [
         name: 'Nepali Congress (NC)',
         leader: 'Gagan Thapa',
         leaderPhoto: 'images/leaders/gaganthapa.jpg',
-        logo: 'images/logos/nc_logo.png',
+        logo: 'images/logos/nc.svg',
         color: '#2563eb'
     }
 ];
@@ -651,29 +674,40 @@ function renderChart(votes) {
 // ADMIN LOGIN FUNCTIONS
 // ===================================
 
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+
+    const usernameInput = document.getElementById('username').value;
+    const passwordInput = document.getElementById('password').value;
     const errorMsg = document.getElementById('errorMessage');
-    
-    // Demo credentials
-    if (username === 'admin' && password === 'admin123') {
-        localStorage.setItem('adminLoggedIn', 'true');
-        window.location.href = 'admin.html';
-    } else {
+
+    try {
+        // Fetch admin credentials from Firebase
+        const snapshot = await firebase.database().ref('adminCredentials').once('value');
+        const creds = snapshot.val();
+
+        // Compare input with Firebase values
+        if (usernameInput === creds.username && passwordInput === creds.password) {
+            localStorage.setItem('adminLoggedIn', 'true');
+            window.location.href = 'admin.html';
+        } else {
+            showLoginError();
+        }
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        showLoginError();
+    }
+
+    function showLoginError() {
         errorMsg.textContent = 'Invalid username or password';
         errorMsg.classList.add('show');
-        
-        // Shake animation
+
         const form = document.getElementById('loginForm');
         form.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-            form.style.animation = '';
-        }, 500);
+        setTimeout(() => form.style.animation = '', 500);
     }
 }
+
 
 // Add shake animation to CSS dynamically
 if (!document.querySelector('style[data-shake]')) {
@@ -845,7 +879,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Initialize vote counts in Firebase
     await initializeVoteCounts();
+
+        // Initialize page views tracking
+    initializeViews();
     
+
     // Check which page we're on and initialize accordingly
     if (document.getElementById('partiesGrid')) {
         console.log('📄 Loading voting page...');
