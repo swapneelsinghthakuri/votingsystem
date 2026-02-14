@@ -48,34 +48,34 @@ function initializeFirebase() {
 const politicalParties = [
     {
         id: 'party1',
-        name: 'Progressive Unity Party',
-        leader: 'Dr. Ramesh Sharma',
-        logo: '🏛️',
-        slogan: 'Building tomorrow, together',
-        color: '#2563eb'
+        name: 'Rastriya Swatantra Party (RSP)',
+        leader: 'Balen Shah',
+        leaderPhoto: 'images/leaders/balen_shah.jpg',
+        logo: 'images/logos/rsp_logo.png',
+        color: '#ef4444'
     },
     {
         id: 'party2',
-        name: 'National Development Alliance',
-        leader: 'Sita Thapa',
-        logo: '🌟',
-        slogan: 'Growth for all, prosperity for everyone',
+        name: 'Communist Party of Nepal (Unified Socialist/ UML)',
+        leader: 'K.P. Sharma Oli',
+        leaderPhoto: 'images/leaders/kp_sharma_oli.jpg',
+        logo: 'images/logos/uml_logo.png',
         color: '#10b981'
     },
     {
         id: 'party3',
-        name: 'Democratic Reform Coalition',
-        leader: 'Krishna Gurung',
-        logo: '🏔️',
-        slogan: 'Justice, equality, progress',
+        name: 'Nepal Communist Party (NCP)',
+        leader: 'Pushpa Kamal Dahal “Prachanda”',
+        leaderPhoto: 'images/leaders/prachanda.jpg',
+        logo: 'images/logos/ncp_logo.png',
         color: '#f59e0b'
     },
     {
         id: 'party4',
-        name: 'People\'s Welfare Movement',
-        leader: 'Maya Rai',
-        logo: '🕊️',
-        slogan: 'Your voice, our strength',
+        name: 'Nepali Congress (NC)',
+        leader: 'Gagan Thapa',
+        leaderPhoto: 'images/leaders/gagan_thapa.jpg', // Leader / candidate photo
+        logo: 'images/logos/nc_logo.png', // Party logo image
         color: '#ef4444'
     }
 ];
