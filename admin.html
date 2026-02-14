@@ -18,7 +18,7 @@
                 <span class="brand-text">VoteNation</span>
             </div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Vote</a>
+                <a href="index.html" class="nav-link active">Vote</a>
                 <a href="results.html" class="nav-link">Results</a>
                 <a href="about.html" class="nav-link">About</a>
                 <button class="btn btn-small btn-secondary" onclick="logoutAdmin()">Logout</button>
@@ -80,7 +80,13 @@
 
             <!-- Detailed Results -->
             <div class="admin-results">
-                <h2 class="section-title">Detailed Results</h2>
+                <h2 class="section-title">
+                    Detailed Results
+                    <span class="live-badge">
+                        <span class="live-dot"></span>
+                        LIVE
+                    </span>
+                </h2>
                 <div class="results-table">
                     <div class="table-header">
                         <div class="table-col">Rank</div>
@@ -106,7 +112,7 @@
                             </svg>
                         </div>
                         <h3 class="action-title">Unlock Voting</h3>
-                        <p class="action-description">Allow users who have already voted to vote again</p>
+                        <p class="action-description">Allow users who have already voted to vote again (local browser only)</p>
                         <button class="btn btn-primary" onclick="unlockVoting()">Unlock All Votes</button>
                     </div>
 
@@ -117,7 +123,7 @@
                             </svg>
                         </div>
                         <h3 class="action-title">Reset System</h3>
-                        <p class="action-description">Clear all votes and reset the system to initial state</p>
+                        <p class="action-description">Clear all votes from Firebase database and reset the system</p>
                         <button class="btn btn-danger" onclick="showResetConfirmation()">Reset All Data</button>
                     </div>
                 </div>
@@ -141,7 +147,7 @@
                     </svg>
                     <div>
                         <h4>Warning: This action cannot be undone!</h4>
-                        <p>This will permanently delete all votes and voting records from the system.</p>
+                        <p>This will permanently delete all votes from the Firebase database.</p>
                     </div>
                 </div>
                 <p class="confirm-text">Type <strong>RESET</strong> to confirm:</p>
@@ -161,16 +167,16 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Your JavaScript -->
+    <script src="script-firebase.js"></script>
     <script>
         // Check admin authentication
         if (!localStorage.getItem('adminLoggedIn')) {
-            window.location.href = 'admin-login.html';
-        }
-        
-        // Initialize admin dashboard
-        if (typeof initAdminDashboard === 'function') {
-            initAdminDashboard();
+            window.location.href = 'admin-login-firebase.html';
         }
     </script>
 </body>

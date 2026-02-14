@@ -19,8 +19,8 @@
                 <span class="brand-text">VoteNation</span>
             </div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Vote</a>
-                <a href="results.html" class="nav-link active">Results</a>
+                <a href="index.html" class="nav-link active">Vote</a>
+                <a href="results.html" class="nav-link">Results</a>
                 <a href="about.html" class="nav-link">About</a>
                 <a href="admin-login.html" class="nav-link">Admin</a>
             </div>
@@ -83,7 +83,10 @@
             <div class="chart-container">
                 <div class="chart-header">
                     <h2 class="chart-title">Vote Distribution</h2>
-                    <div class="chart-legend" id="chartLegend"></div>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="votesChart"></canvas>
@@ -107,12 +110,11 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <script>
-        // Initialize results page
-        if (typeof initResults === 'function') {
-            initResults();
-        }
-    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Your JavaScript -->
+    <script src="script-firebase.js"></script>
 </body>
 </html>
