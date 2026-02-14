@@ -50,32 +50,32 @@ const politicalParties = [
         id: 'party1',
         name: 'Rastriya Swatantra Party (RSP)',
         leader: 'Balen Shah',
-        leaderPhoto: 'images/leaders/balen_shah.jpg',
-        logo: 'images/logos/rsp_logo.png',
+        leaderPhoto: 'images/leaders/balen.jpg',
+        logo: 'C:/Users/singh/Desktop/votingsystem/images/leaders/balen.jpg',
         color: '#ef4444'
     },
     {
         id: 'party2',
         name: 'Communist Party of Nepal (Unified Socialist/ UML)',
         leader: 'K.P. Sharma Oli',
-        leaderPhoto: 'images/leaders/kp_sharma_oli.jpg',
-        logo: 'images/logos/uml_logo.png',
+        leaderPhoto: 'images\leaders\oil.jpg',
+        logo: 'images\leaders\oil.jpg',
         color: '#10b981'
     },
     {
         id: 'party3',
         name: 'Nepal Communist Party (NCP)',
         leader: 'Pushpa Kamal Dahal “Prachanda”',
-        leaderPhoto: 'images/leaders/prachanda.jpg',
-        logo: 'images/logos/ncp_logo.png',
+        leaderPhoto: 'images/leaders/prachanda-puspa.jpg',
+        logo: 'images/leaders/prachanda-puspa.jpg',
         color: '#f59e0b'
     },
     {
         id: 'party4',
         name: 'Nepali Congress (NC)',
         leader: 'Gagan Thapa',
-        leaderPhoto: 'images/leaders/gagan_thapa.jpg', // Leader / candidate photo
-        logo: 'images/logos/nc_logo.png', // Party logo image
+        leaderPhoto: 'images\leaders\gaganthapa.jpg',
+        logo: '',
         color: '#ef4444'
     }
 ];
@@ -83,6 +83,7 @@ const politicalParties = [
 // ===================================
 // FIREBASE FUNCTIONS - VOTES
 // ===================================
+
 
 /**
  * Initialize vote counts for all parties in Firebase
